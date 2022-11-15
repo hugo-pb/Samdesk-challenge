@@ -18,7 +18,7 @@ async function downloadAllArticles() {
   return articles;
 }
 
-const topArticles = (limit) => {
+const getTopArticles = (limit) => {
   const topTitles = [];
 
   return (
@@ -66,4 +66,4 @@ const topArticles = (limit) => {
   );
 };
 
-topArticles(48).then((data) => console.log(data));
+module.exports = { getTopArticles, downloadAllArticles };
