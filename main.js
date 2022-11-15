@@ -1,66 +1,69 @@
 const axios = require("axios");
 
+// Get all articles // Helper Function
+async function downloadAllArticles() {
+  let articles = [];
+  let page = 0;
+  let totalPages = 0;
+
+  do {
+    let { data: response } = await axios.get(
+      `https://jsonmock.hackerrank.com/api/articles?page=${page++}`
+    );
+
+    totalPages = response.total_pages;
+    articles = articles.concat(response.data);
+  } while (page < totalPages);
+
+  return articles;
+}
+
 const topArticles = (limit) => {
   const topTitles = [];
-  async function downloadAllArticles() {
-    let articles = [];
-    let page = 0;
-    let totalPages = 0;
 
-    do {
-      let { data: response } = await axios.get(
-        `https://jsonmock.hackerrank.com/api/articles?page=${page++}`
-      );
-      totalPages = response.total_pages;
-      console.log(
-        `downloadarticles: page ${page} of ${totalPages} downloaded...`
-      );
-      articles = articles.concat(response.data);
-      console.log("articles.length:", articles.length);
-    } while (page < totalPages);
+  return (
+    downloadAllArticles()
+      // sort articles //
+      .then((data) => {
+        data
+          .sort((a, b) => {
+            let n = a.num_comments - b.num_comments;
+            if (n !== 0) {
+              return n;
+            }
+            return a.title - b.title;
+          })
+          .reverse();
 
-    console.log("downloadarticles: download complete.");
-
-    return articles;
-  }
-
-  return downloadAllArticles()
-    .then((data) => {
-      data
-        .sort((a, b) => {
-          let n = a.num_comments - b.num_comments;
-          if (n !== 0) {
-            return n;
+        // add to the list of top titles //
+        for (const title of data) {
+          if (topTitles.length >= limit) {
+            return topTitles;
           }
-          return a.title - b.title;
-        })
-        .reverse();
+          // filter duplicates //
+          if (
+            title.title === topTitles[topTitles.length - 1] ||
+            title.story_title === topTitles[topTitles.length - 1]
+          ) {
+            continue;
+          }
 
-      for (const title of data) {
-        if (topTitles.length >= limit) {
-          return topTitles;
-        }
+          if (title.title) {
+            topTitles.push(title.title);
+            continue;
+          }
 
-        if (
-          title.title === topTitles[topTitles.length - 1] ||
-          title.story_title === topTitles[topTitles.length - 1]
-        ) {
-          continue;
+          if (title.story_title) {
+            topTitles.push(title.story_title);
+            continue;
+          }
         }
-
-        if (title.title) {
-          topTitles.push(title.title);
-          continue;
-        }
-
-        if (title.story_title) {
-          topTitles.push(title.story_title);
-          continue;
-        }
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+        return topTitles;
+      })
+      .catch((err) => {
+        console.log("oops something went wrong", err);
+      })
+  );
 };
-topArticles(10).then((data) => console.log(data));
+
+topArticles(48).then((data) => console.log(data));
