@@ -1,9 +1,7 @@
-// function // parasm limit number //return top name articles
-// alp  dec comment count// dec alph (if same comment count)
 const axios = require("axios");
 
 const topArticles = (limit) => {
-  // make a request to Api/multiple request to get all pages
+  const topTitles = [];
   async function downloadAllArticles() {
     let articles = [];
     let page = 0;
@@ -26,32 +24,43 @@ const topArticles = (limit) => {
     return articles;
   }
 
-  // query response in comment dec (most comments on top) if there is a tie
-  // query aph order
-
-  //  top names of articles First get the article name.
-  //     If the title field is not null, use title.
-  //     Otherwise, if the story_title field is not null, use story_title.
-  //     If both fields are null, ignore the article.
-  // Sort the titles decreasing by comment count, then decreasing alphabetically by article name if there is a tie in comments count. Return a list of the top limit names.
-
-  downloadAllArticles()
+  return downloadAllArticles()
     .then((data) => {
-      console.log(data);
-
-      console.log(
-        "sorted data",
-        data.sort((a, b) => {
+      data
+        .sort((a, b) => {
           let n = a.num_comments - b.num_comments;
           if (n !== 0) {
             return n;
           }
           return a.title - b.title;
         })
-      );
+        .reverse();
+
+      for (const title of data) {
+        if (topTitles.length >= limit) {
+          return topTitles;
+        }
+
+        if (
+          title.title === topTitles[topTitles.length - 1] ||
+          title.story_title === topTitles[topTitles.length - 1]
+        ) {
+          continue;
+        }
+
+        if (title.title) {
+          topTitles.push(title.title);
+          continue;
+        }
+
+        if (title.story_title) {
+          topTitles.push(title.story_title);
+          continue;
+        }
+      }
     })
     .catch((err) => {
       console.log(err);
     });
 };
-topArticles();
+topArticles(10).then((data) => console.log(data));
