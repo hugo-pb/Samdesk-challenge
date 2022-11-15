@@ -35,6 +35,23 @@ const topArticles = (limit) => {
   //     If both fields are null, ignore the article.
   // Sort the titles decreasing by comment count, then decreasing alphabetically by article name if there is a tie in comments count. Return a list of the top limit names.
 
-  downloadAllArticles().then((data) => console.log(data));
+  downloadAllArticles()
+    .then((data) => {
+      console.log(data);
+
+      console.log(
+        "sorted data",
+        data.sort((a, b) => {
+          let n = a.num_comments - b.num_comments;
+          if (n !== 0) {
+            return n;
+          }
+          return a.title - b.title;
+        })
+      );
+    })
+    .catch((err) => {
+      console.log(err);
+    });
 };
 topArticles();
